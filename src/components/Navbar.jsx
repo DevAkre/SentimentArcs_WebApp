@@ -1,16 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const navbarItems=  [
-    {name: "Home", link: "/"},
-    {name: "Single", link: "/single"},
-    {name: "Ensemble", link: "/ensemble"},
-    {name: "Settings", link: "/settings"},
-    {name: "Help", link: "/help"},
-    {name: "Logout", link: "/logout"},
+    {name: "Home", link: "/dashboard/"},
+    {name: "Single", link: "/dashboard/single"},
+    {name: "Ensemble", link: "/dashboard/ensemble"},
+    {name: "Settings", link: "/dashboard/settings"},
+    {name: "Help", link: "/dashboard/help"},
 ]
 
 export default function Navbar(){
+    //eslint-disable-next-line
+    const { user, logout } = useAuth(); 
     return (
         <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-900">
             <div className="container flex flex-wrap items-center justify-between mx-auto">
@@ -32,6 +34,11 @@ export default function Navbar(){
                         );
                     }
                     )}
+                    <li>
+                        <button onClick={logout} className="block px-4 py-2 outline hover:bg-gray-100 rounded active:bg-red-200 dark:hover:bg-red-700 dark:active:bg-red-600 dark:text-white">
+                            Logout
+                        </button>
+                    </li>
                 </ul>
                 </div>
             </div>
