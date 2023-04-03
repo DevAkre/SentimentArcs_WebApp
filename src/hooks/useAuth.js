@@ -3,12 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "./useLocalStorage";
 const AuthContext = createContext();
 
+const fakeAuth = (data) =>
+  new Promise((resolve) => {
+    setTimeout(() => resolve(data), 250);
+  });
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useLocalStorage("user", null);
   const navigate = useNavigate();
 
   const login = async (data) => {
-    setUser(data);
+    const user = await fakeAuth(data.username);
+    setUser(user);
     navigate("/dashboard");
   };
 

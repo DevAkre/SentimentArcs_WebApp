@@ -14,7 +14,7 @@ export default function Navbar(){
     //eslint-disable-next-line
     const { user, logout } = useAuth(); 
     return (
-        <nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-900">
+        <nav className="bg-slate-300 border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-slate-900">
             <div className="container flex flex-wrap items-center justify-between mx-auto">
                 <span className="flex items-center">
                     <img src="logo192.png" className="h-6 mr-3 sm:h-9" alt="SentimentArcs Logo" />
