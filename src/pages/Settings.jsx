@@ -1,6 +1,6 @@
 import {React, useState} from 'react';
 import {useAuth} from '../hooks/useAuth';
-import ToggleButton from '../components/toggleButton';
+import ToggleButton from '../components/ToggleButton';
 
 export default function SettingsPage() {
   const {user} = useAuth();

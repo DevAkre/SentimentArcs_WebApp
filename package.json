@@ -8,6 +8,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "chart.js": "^4.2.1",
+    "http-proxy-middleware": "^2.0.6",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
@@ -17,6 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start-api": "cd ../server && python3 server.py",
     "build": "react-scripts build",
     "postbuild": "node postbuild.js",
     "test": "react-scripts test",
