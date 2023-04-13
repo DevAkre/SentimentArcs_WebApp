@@ -4,10 +4,10 @@ import { useLocalStorage } from "./useLocalStorage";
 const AuthContext = createContext();
 
 //Development only
-const fakeAuth = (data) =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve(data["username"]), 250);
-  });
+// const fakeAuth = (data) =>
+//   new Promise((resolve) => {
+//     setTimeout(() => resolve(data["username"]), 250);
+//   });
 
 const AuthLogin = async (data) => {
   return fetch(
@@ -22,6 +22,11 @@ const AuthLogin = async (data) => {
           return response.json()
         else
           return {success: false}
+      }
+    )
+    .catch((error) => {
+        console.error("Error:", error);
+        alert("Error: " + error);
       }
     );
 };
@@ -40,8 +45,12 @@ const AuthRegister = async (data) => {
         return response.json()
       else
         return {success: false}
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error: " + error);
     }
-  );
+    );
 }
       
 
@@ -63,6 +72,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (data) => {
     const response = await AuthLogin({"username": data.username, "password": data.password});
+    
     if(response.success){
       console.log(response);
       setUser(data.username);
