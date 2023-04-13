@@ -14,10 +14,6 @@ export default function Navbar(){
     //eslint-disable-next-line
     const { user, logout } = useAuth(); 
     const curLocation = useLocation();
-    console.log(curLocation.pathname);
-    navbarItems.map((item, index) =>{
-        console.log("block px-4 py-2 " + ((curLocation.pathname===item.link)?"md:dark:text-blue-500":"hover:bg-gray-100 active:bg-gray-200 dark:hover:bg-gray-600 dark:active:bg-gray-500 dark:text-white"));
-    });
     return (
         <nav className="bg-slate-300 border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-slate-900">
             <div className="container flex flex-wrap items-center justify-between mx-auto">

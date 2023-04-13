@@ -2,18 +2,17 @@ import React from "react";
 import {Link} from "react-router-dom";
 import {useAuth} from "../hooks/useAuth";
 
-export default function RegisterPage(){
-  const { login } = useAuth();
 
-  const handleSubmit = (event) => {
+export default function RegisterPage(){
+  const {register} = useAuth();
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     if(data.get("password") !== data.get("confirm-password")){
       alert("Passwords don't match");
       return;
     }else{
-        //TODO: Add a new user to the database and then log them in
-      login({
+      register({
         username: data.get("username"),
         password: data.get("password")
       });
@@ -77,7 +76,7 @@ export default function RegisterPage(){
                     Confirm password
                     </label>
                     <input
-                    type="confirm-password"
+                    type="password"
                     name="confirm-password"
                     id="confirm-password"
                     className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"

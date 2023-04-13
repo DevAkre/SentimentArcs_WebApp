@@ -3,14 +3,15 @@ import {Link} from "react-router-dom";
 import {useAuth} from "../hooks/useAuth";
 
 export default function LoginPage(){
-  const { login } = useAuth();
+  const {login} = useAuth();
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     login({
       username: data.get("username"),
-      password: data.get("password")
+      password: data.get("password"),
+      remember: data.get("remember"),
     });
   };
 
