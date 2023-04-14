@@ -11,8 +11,8 @@ export default function HomePage() {
   return(
     <>
       <h3>Welcome, {user}</h3>
-      <div className = "grid grid-cols-1 md:grid-cols-2 gap-2 px-3 py-3">
-        <div>
+      <div className = "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 px-3 py-3">
+        <div className = "space-y-4 md:space-y-6">
           <FileUpload fileCallBack={fileCallBack}/>
           <RecentActivity/>
         </div>

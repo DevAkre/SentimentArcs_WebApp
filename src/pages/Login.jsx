@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {useAuth} from "../hooks/useAuth";
 import InputBox from "../components/InputBox";
 import SubmitButton from "../components/SubmitButton";
@@ -7,8 +7,13 @@ import LoginBox from "../components/LoginBox";
 import Logo from "../components/Logo";
 
 export default function LoginPage(){
-  const {login} = useAuth();
-
+  const {login, user, token} = useAuth();
+  useEffect(() => {
+    if (user && token) {
+      window.location.href = "/dashboard";
+    }
+  }, [user, token]);
+  
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -20,7 +25,7 @@ export default function LoginPage(){
   };
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-800">
+    <section className="bg-gray-100 dark:bg-gray-800">
       <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
         <Logo/>
         <LoginBox label = "Log In">
