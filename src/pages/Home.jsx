@@ -1,23 +1,35 @@
 import React from 'react';
 import FileUpload from '../components/FileUpload';
-import RecentActivity from '../components/RecentActivity';
-import LineChart from '../components/LineChart';
+import TextSelect from '../components/TextSelect';
+import CleanTextSelect from '../components/CleanTextSelect';
+// import RecentActivity from '../components/RecentActivity';
+// import LineChart from '../components/LineChart';
 import { useAuth } from '../hooks/useAuth';
 import testData from '../PrideAndPrejudiceVader.json';
+import {ColumnGrid, Column} from '../components/ColumnGrid';
 
 export default function HomePage() {
   const {user} = useAuth();
   const fileCallBack = (file) => {};
   return(
     <>
-      <h3>Welcome, {user}</h3>
-      <div className = "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 px-3 py-3">
-        <div className = "space-y-4 md:space-y-6">
+      <h3>
+        Welcome, {user}.
+      </h3>
+      <ColumnGrid n_col="1" n_cols_md="2">
+        <Column>
           <FileUpload fileCallBack={fileCallBack}/>
-          <RecentActivity/>
-        </div>
-        <div><LineChart lineLabels = {["Vader"]}  datasets = {[testData]} /></div>
-      </div>
+          <div className=" flex items-center justify-center">OR</div>
+          <TextSelect/>
+          {/* <RecentActivity/> WIP*/}
+        </Column>
+
+        <Column>
+          <CleanTextSelect/>
+
+          {/* <LineChart lineLabels = {["Vader"]}  datasets = {[testData]} /> */}
+        </Column>
+      </ColumnGrid>
     </>
   );
 }

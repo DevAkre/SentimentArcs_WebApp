@@ -19,7 +19,7 @@ function App() {
   document.querySelector('html').classList.add('dark');
   return (
     <AuthProvider>
-    <div className="wrapper h-screen bg-white dark:bg-slate-800 dark:text-white">
+    <div className="wrapper min-h-screen bg-white dark:bg-slate-800 dark:text-white">
       <Routes>
         <Route path="/" element = {<Navigate to="/login"/>}/>
         <Route path="login" element = {<LoginPage/>}/>
@@ -34,7 +34,7 @@ function App() {
         </Route>
         <Route path="*" element={<div> Not Found or You do not have permission.</div>}/>
       </Routes>
-    </div>   
+    </div>
     </AuthProvider>
   )
 }

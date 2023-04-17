@@ -43,9 +43,11 @@ export default function FileUpload({label, fileCallBack, maxFileSize = DEFAULT_M
         });
         const responseData = await response.json();
         console.log(responseData);
-        if(responseData.success)
+        if(responseData.success){
+            event.target.reset();
+            setFile(null);
             fileCallBack(responseData);
-        else
+        }else
             alert("Error uploading file: " + responseData.error);
 
     }
