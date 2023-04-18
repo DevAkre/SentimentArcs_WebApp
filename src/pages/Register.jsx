@@ -1,10 +1,9 @@
 import React from "react";
-import {Link} from "react-router-dom";
 import InputBox from "../components/InputBox";
 import LoginBox from "../components/LoginBox";
 import Logo from "../components/Logo";
 import PrettyLink from "../components/PrettyLink";
-import SubmitButton from "../components/SubmitButton";
+import {SubmitButton} from "../components/SubmitButton";
 import {useAuth} from "../hooks/useAuth";
 
 

@@ -5,7 +5,7 @@ import CleanTextSelect from '../components/CleanTextSelect';
 // import RecentActivity from '../components/RecentActivity';
 // import LineChart from '../components/LineChart';
 import { useAuth } from '../hooks/useAuth';
-import testData from '../PrideAndPrejudiceVader.json';
+// import testData from '../test/PrideAndPrejudiceVader.json';
 import {ColumnGrid, Column} from '../components/ColumnGrid';
 
 export default function HomePage() {
@@ -16,7 +16,7 @@ export default function HomePage() {
       <h3>
         Welcome, {user}.
       </h3>
-      <ColumnGrid n_col="1" n_cols_md="2">
+      <ColumnGrid>
         <Column>
           <FileUpload fileCallBack={fileCallBack}/>
           <div className=" flex items-center justify-center">OR</div>
@@ -26,7 +26,6 @@ export default function HomePage() {
 
         <Column>
           <CleanTextSelect/>
-
           {/* <LineChart lineLabels = {["Vader"]}  datasets = {[testData]} /> */}
         </Column>
       </ColumnGrid>

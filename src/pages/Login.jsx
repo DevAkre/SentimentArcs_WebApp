@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import {useAuth} from "../hooks/useAuth";
 import InputBox from "../components/InputBox";
-import SubmitButton from "../components/SubmitButton";
+import {SubmitButton} from "../components/SubmitButton";
 import PrettyLink from "../components/PrettyLink";
 import LoginBox from "../components/LoginBox";
 import Logo from "../components/Logo";

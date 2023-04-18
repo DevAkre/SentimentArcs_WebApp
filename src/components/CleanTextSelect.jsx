@@ -1,5 +1,5 @@
 import React, {useState, useContext} from 'react';
-import SubmitButton from './SubmitButton';
+import {SubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 import SearchBox from './SearchBox';
 import {StoreContext} from '../contexts/StoreContext';
@@ -8,8 +8,8 @@ function ListItem({id, label, onClick, extraInfo= null}){
     return(
             <li id={id} className="cursor-pointer flex py-2 w-full border-b items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-600" onClick = {onClick} >
                 <div className= "md-text-lg w-full">
-                    <input id={"checkbox-"+id} type="checkbox" value="" class="h-4 mr-2" onClick={(e)=>{e.stopPropagation()}}/>
-                    <label for={"checkbox-"+id} class="ml-2 w-full" onClick={(e)=>{e.stopPropagation()}}>
+                    <input id={"checkbox-"+id} type="checkbox" value="" className="h-4 mr-2" onClick={(e)=>{e.stopPropagation()}}/>
+                    <label htmlFor={"checkbox-"+id} className="ml-2 w-full" onClick={(e)=>{e.stopPropagation()}}>
                         {label}
                     </label>         
                 </div> 

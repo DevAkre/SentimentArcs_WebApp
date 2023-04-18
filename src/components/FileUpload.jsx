@@ -1,6 +1,6 @@
 import React, {useState, useRef} from 'react';
 import InputBox from './InputBox';
-import SubmitButton from './SubmitButton';
+import {SubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 
 const DEFAULT_MAX_FILE_SIZE = 10000000; // 10MB
