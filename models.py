@@ -44,9 +44,21 @@ class Text(db.Model):
     author = db.Column(db.String(80), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     filename = db.Column(db.String(120), nullable=False)
+    current_cleaned_text_id = db.Column(db.Integer, db.ForeignKey('cleaned_text.cleaned_text_id'), nullable=True)
 
     def __repr__(self):
         return '<Text %r>' % self.text
+    
+    def serialize(self):
+        return {
+            'text_id': self.text_id,
+            'date_uploaded': self.date_uploaded,
+            'size': self.size,
+            'title': self.title,
+            'author': self.author,
+            'user_id': self.user_id,
+            'filename': self.filename
+        }
     
     def __init__(self, title, author, user_id, size, filename ):
         self.title = title
@@ -57,13 +69,24 @@ class Text(db.Model):
 
 class Cleaned_Text(db.Model):
     cleaned_text_id = db.Column(db.Integer, primary_key=True)
+    date_processed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     text_id = db.Column(db.Integer, db.ForeignKey('text.text_id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    sentences = db.Column(db.JSON, nullable=False)
+    options = db.Column(db.String(120), nullable=False)
+
+    def options_List(self):
+        return self.options.split(',')
 
     def __repr__(self):
         return '<Cleaned_Text %r>' % self.text
     
-    def __init__(self, text, model_id):
-        self.text = text
-        self.model_id = model_id
+    def __init__(self, text_id, user_id, options):
+        self.text_id = text_id
+        self.user_id = user_id
+        if(type(options) == list):
+            self.options = ','.join(options)
+        elif(type(options) == str):
+            self.options = options
+        else:
+            raise TypeError('options must be a list or a string')
+        

@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_file
 from models import db, User, Text
 import os
 import json
@@ -79,6 +79,7 @@ def user_register():
             "error": "Username already taken"
         }
 
+#POST request gives user token and a valid file
 @app.post('/api/text/upload')
 def text_upload():
     user = get_user_from_token(request.form.get("token"))
@@ -100,26 +101,34 @@ def text_upload():
             text = Text(request.form.get("title"), request.form.get("author"), user.user_id, file_size, filename)
             db.session.add(text)
             db.session.commit()
-            return {"success": True}
-        
+            return {"success": True, "text": text.serialize()}
+
+#POST request gives user token and text_id
 @app.post('/api/text/delete')
 def text_delete():
-    user = get_user_from_token(request.form.get("token"))
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
     if(user is None):
         return {"success": False, "error": "Invalid token"}
     else:
-        print(user.username + " delete attempted!")
-        text = Text.query.filter_by(text_id=request.form.get("text_id")).first()
+        text = Text.query.filter_by(text_id=request_data["text_id"]).first()
         if(text is None):
             return {"success": False, "error": "Invalid text id"}
         else:
             if(text.user_id != user.user_id):
                 return {"success": False, "error": "You do not own this text"}
             else:
+                #delete file from storage
+                try:
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], text.filename))
+                except:
+                    print("Error: file not found")
+                #delete text from database
                 db.session.delete(text)
                 db.session.commit()
                 return {"success": True}
 
+#POST request request gives user token
 @app.post('/api/text/list')
 def text_list():
     request_data = request.get_json()
@@ -128,16 +137,62 @@ def text_list():
         return {"success": False, "error": "Invalid token"}
     else:
         print("fetching list for user "+ user.username)
-        print(user.username + " list attempted!")
+        print(user.username + " list retrieval attempted!")
         texts = Text.query.filter_by(user_id=user.user_id).order_by(Text.date_uploaded.desc()).all()
+        if(texts is None):
+           return {"success": False, "error": "No texts found"}
+        textList = [text.serialize() for text in texts]
+        return {"success": True, "texts": json.dumps(textList, default = str)}
+
+#POST request request gives user token and text_id
+@app.post('/api/text/download')
+def text_download():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        print(user.username + " download attempted!")
+        text = Text.query.filter_by(text_id=request_data["text_id"]).first()
+        if(text is None):
+            return {"success": False, "error": "Invalid text id"}
+        else:
+            if(text.user_id != user.user_id):
+                return {"success": False, "error": "You do not own this text"}
+            else:
+                return send_file(os.path.join(app.config['UPLOAD_FOLDER'], text.filename), as_attachment=True)
+            
+@app.post('/api/text/current_cleaned')
+def text_current_cleaned():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        print(user.username + " current cleaned text retrieval attempted!")
+        text = Text.query.filter_by(text_id=request_data["text_id"]).first()
+        if(text is None):
+           return {"success": False, "error": "No texts found"}
+        else:     
+            return {"success": True, "current_cleaned_text_id": text.current_cleaned_text_id}
+
+
+@app.post('/api/cleaned_text/list')
+def cleaned_text_list():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    text = Text.query.filter_by(text_id=request_data["text_id"]).first()
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        print(user.username + " cleaned text list retrieval attempted!")
+        texts = Cleaned_Text.query.filter_by(user_id=user.user_id).order_by(Cleaned_Text.date_processed.desc()).all()
         if(texts is None):
            return {"success": False, "error": "No texts found"}
         textList = []
         for text in texts:
             textList.append({"text_id":text.text_id, "date_uploaded":text.date_uploaded, "size":text.size, "title": text.title, "author" : text.author, "filename":text.filename})
         return {"success": True, "texts": json.dumps(textList, default = str)}
-    
-
 
 if __name__ == '__main__':
     app.run()
