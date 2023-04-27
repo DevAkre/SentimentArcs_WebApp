@@ -1,18 +1,23 @@
-from flask import Flask, request, send_file
-from models import db, User, Text
+from flask import Flask, request, send_file, send_from_directory
+from models import db, User, Text, Clean_Text
 import os
+import csv
 import json
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'uploads'
+DATA_FOLDER = 'data'
 ALLOWED_EXTENSIONS = {'txt', 'pdf'}
 # create the app
 app = Flask(__name__, static_url_path='')
 #init config
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["DATA_FOLDER"] = DATA_FOLDER
 #make upload folder if it doesn't exist
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER']), exist_ok=True)
+os.makedirs(os.path.join(app.config['DATA_FOLDER'], 'clean_text'), exist_ok=True)
+
 db.init_app(app)
 
 with app.app_context():
@@ -30,6 +35,7 @@ def allowed_file(filename):
 def serve_frontEnd():
     return app.send_static_file('index.html')
 
+
 @app.post('/api/user/login')
 def user_login():
     request_data = request.get_json();
@@ -38,6 +44,12 @@ def user_login():
         db.select(User).filter_by(username=request_data['username']),
         description=f"No user named '{request_data['username']}'."
     )
+
+    if(result.token and "token" in request_data and result.token == request_data['token']):
+        print(request_data["username"] + " access token accepted!")
+        return {
+            "success": True,   
+        }
 
     if(result.password == request_data['password']):
         result.generate_access_token()
@@ -56,6 +68,7 @@ def user_login():
 
 @app.post('/api/user/logout')
 def user_logout():
+    #todo properly
     return {}
 
 @app.post('/api/user/register')
@@ -160,39 +173,133 @@ def text_download():
             if(text.user_id != user.user_id):
                 return {"success": False, "error": "You do not own this text"}
             else:
-                return send_file(os.path.join(app.config['UPLOAD_FOLDER'], text.filename), as_attachment=True)
+                print("File sent.")
+                return send_from_directory(app.config['UPLOAD_FOLDER'], text.filename, as_attachment=True)
             
-@app.post('/api/text/current_cleaned')
-def text_current_cleaned():
+
+@app.post('/api/clean_text/list')
+def clean_text_list():
     request_data = request.get_json()
+    print(request_data)
     user = get_user_from_token(request_data["token"])
     if(user is None):
         return {"success": False, "error": "Invalid token"}
     else:
-        print(user.username + " current cleaned text retrieval attempted!")
         text = Text.query.filter_by(text_id=request_data["text_id"]).first()
         if(text is None):
-           return {"success": False, "error": "No texts found"}
-        else:     
-            return {"success": True, "current_cleaned_text_id": text.current_cleaned_text_id}
-
-
-@app.post('/api/cleaned_text/list')
-def cleaned_text_list():
+           return {"success": False, "error": "Invalid text"}
+        print(user.username + " clean text list retrieval attempted!")
+        texts = Clean_Text.query.filter_by(user_id=user.user_id, text_id= text.text_id).order_by(Clean_Text.date_processed.desc()).all()
+        if(texts is None):
+           return {"success": False, "error": "No clean texts found"}
+        textList = []
+        for text in texts:
+            textList.append({"clean_text_id":text.clean_text_id, "date_processed":text.date_processed, "options":text.options})
+        return {"success": True, "cleanTexts": json.dumps(textList, default = str)}
+    
+@app.post('/api/clean_text/delete')
+def clean_text_delete():
     request_data = request.get_json()
     user = get_user_from_token(request_data["token"])
-    text = Text.query.filter_by(text_id=request_data["text_id"]).first()
     if(user is None):
         return {"success": False, "error": "Invalid token"}
     else:
-        print(user.username + " cleaned text list retrieval attempted!")
-        texts = Cleaned_Text.query.filter_by(user_id=user.user_id).order_by(Cleaned_Text.date_processed.desc()).all()
-        if(texts is None):
-           return {"success": False, "error": "No texts found"}
-        textList = []
-        for text in texts:
-            textList.append({"text_id":text.text_id, "date_uploaded":text.date_uploaded, "size":text.size, "title": text.title, "author" : text.author, "filename":text.filename})
-        return {"success": True, "texts": json.dumps(textList, default = str)}
+        text = Clean_Text.query.filter_by(clean_text_id=request_data["clean_text_id"]).first()
+        if(text is None):
+            return {"success": False, "error": "Invalid clean text id"}
+        else:
+            if(text.user_id != user.user_id):
+                return {"success": False, "error": "You do not own this text"}
+            else:
+                #delete file from storage
+                try:
+                    os.remove(os.path.join(app.config['DATA_FOLDER'], 'clean_text', text.filename))
+                except:
+                    print("Error: file not found")
+                #delete text from database
+                db.session.delete(text)
+                db.session.commit()
+                return {"success": True}
+        
+@app.post('/api/clean_text/create')
+def clean_text_create():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        text = Text.query.filter_by(text_id=request_data["text_id"]).first()
+        if(text is None):
+            return {"success": False, "error": "Invalid text id"}
+        else:
+            if(text.user_id != user.user_id):
+                return {"success": False, "error": "You do not own this text"}
+            else:
+            
+                #create cleaned text
+                clean_text = Clean_Text(text.text_id, user.user_id, request_data["options"])
+                #check if clean text already exists
+                temp = Clean_Text.query.filter_by(text_id=clean_text.text_id, options=clean_text.options).first()
+                if(temp is not None):
+                    return {"success": False, "error": "Clean text already exists"}
+                #create file
+                clean_text.filename = str(clean_text.clean_text_id) + ".txt"
+                #save file
+                with open(os.path.join(app.config['DATA_FOLDER'], 'clean_text', clean_text.filename), 'w') as f:
+                    f.write(clean_text.options)
+                #save to database
+                db.session.add(clean_text)
+                db.session.commit()
+                return {"success": True, "cleanText": clean_text.serialize()}
+
+@app.post('/api/clean_text/preview')
+def clean_text_preview():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        first5 = []
+        middle5 = []
+        last5 = []
+        num = request_data["num"];
+        with open(os.path.join(app.config['DATA_FOLDER'],  'clean_text', 'PrideAndPrejudiceByJaneAustin_cleaned.csv' ), 'r') as csvfile:
+            reader = csv.reader(csvfile)
+            row_cout = sum(1 for row in reader)
+            csvfile.seek(0)
+            for i, row in enumerate(reader):
+                if(0<i<num+1):
+                    first5.append(row)
+                elif((row_cout-num)/2<i<(row_cout+num)/2+1):
+                    middle5.append(row)
+                elif(row_cout-(num+1)<i<row_cout):
+                    last5.append(row)
+        return {"success": True, "preview": [first5, middle5, last5]}
+        # text = Clean_Text.query.filter_by(clean_text_id=request_data["clean_text_id"]).first()
+        # if(text is None):
+        #     return {"success": False, "error": "Invalid clean text id"}
+        # else:
+        #     if(text.user_id != user.user_id):
+        #         return {"success": False, "error": "You do not own this text"}
+        #     else:
+        #         #send first 5, middle 5 and last 5 sentences of cleaned_text
+                # first5 = []
+                # middle5 = []
+                # last5 = []
+                # num = request_data["num"];
+        #         with open(os.path.join(app.config['DATA_FOLDER'], 'clean_text',  text.filname), 'r') as f:
+        #             reader = csv.reader(csvfile)
+        #             row_cout = sum(1 for row in reader)
+        #             for i, row in enumerate(reader):
+        #                 if(0<i<num+1):
+                        #     first5.append(row)
+                        # elif((row_cout-num)/2<i<(row_cout+num)/2+1):
+                        #     middle5.append(row)
+                        # elif(row_cout-(num+1)<i<row_cout):
+                        #     last5.append(row)
+        #         return {"success": True, "preview": [first5, middle5, last5]}
+
+        
 
 if __name__ == '__main__':
     app.run()

@@ -44,7 +44,6 @@ class Text(db.Model):
     author = db.Column(db.String(80), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     filename = db.Column(db.String(120), nullable=False)
-    current_cleaned_text_id = db.Column(db.Integer, db.ForeignKey('cleaned_text.cleaned_text_id'), nullable=True)
 
     def __repr__(self):
         return '<Text %r>' % self.text
@@ -67,12 +66,13 @@ class Text(db.Model):
         self.filename = filename
         self.size = size
 
-class Cleaned_Text(db.Model):
-    cleaned_text_id = db.Column(db.Integer, primary_key=True)
+class Clean_Text(db.Model):
+    clean_text_id = db.Column(db.Integer, primary_key=True)
     date_processed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     text_id = db.Column(db.Integer, db.ForeignKey('text.text_id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    options = db.Column(db.String(120), nullable=False)
+    options = db.Column(db.String(512), nullable=False)
+    filename = db.Column(db.String(120), nullable=False)
 
     def options_List(self):
         return self.options.split(',')
@@ -80,7 +80,17 @@ class Cleaned_Text(db.Model):
     def __repr__(self):
         return '<Cleaned_Text %r>' % self.text
     
+    def serialize(self):
+        return {
+            'clean_text_id': self.clean_text_id,
+            'date_processed': self.date_processed,
+            'text_id': self.text_id,
+            'user_id': self.user_id,
+            'options': self.options_List()
+        }
+
     def __init__(self, text_id, user_id, options):
+        self.filename = str(self.clean_text_id) + '_' + str(text_id) + '_' + str(user_id) + '.txt'
         self.text_id = text_id
         self.user_id = user_id
         if(type(options) == list):
