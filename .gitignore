@@ -1,8 +1,8 @@
-#static production files
-/static
 #database instance
 /instance
 #uploaded files
 /uploads
 #venv
 /virt
+#data folder
+/data
