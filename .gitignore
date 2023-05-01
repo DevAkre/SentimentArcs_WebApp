@@ -1,5 +1,6 @@
 #database instance
 /instance
+/data
 #uploaded files
 /uploads
 #venv

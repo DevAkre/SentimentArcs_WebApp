@@ -1,5 +1,7 @@
 from flask import Flask, request, send_file, send_from_directory
 from models import db, User, Text, Clean_Text
+#SentimentArcsPackage
+import imppkg.simplifiedSA as SA
 import os
 import csv
 import json
@@ -243,14 +245,17 @@ def clean_text_create():
                 if(temp is not None):
                     return {"success": False, "error": "Clean text already exists"}
                 #create file
-                clean_text.filename = str(clean_text.clean_text_id) + ".txt"
+                text_str = SA.import_df(text.filename)
+                segmented_text = SA.segment_sentences(text_str)
+                # SA.create_clean_df(segmented_text, text.filename)
+
                 #save file
                 with open(os.path.join(app.config['DATA_FOLDER'], 'clean_text', clean_text.filename), 'w') as f:
                     f.write(clean_text.options)
                 #save to database
                 db.session.add(clean_text)
                 db.session.commit()
-                return {"success": True, "cleanText": clean_text.serialize()}
+                return {"success": True}
 
 @app.post('/api/clean_text/preview')
 def clean_text_preview():
@@ -303,3 +308,18 @@ def clean_text_preview():
 
 if __name__ == '__main__':
     app.run()
+
+#list of all api endpoints
+# user
+#   /api/user/register
+#   /api/user/login
+#   /api/user/delete
+#   /api/user/logout
+# text
+#   /api/text/upload
+#   /api/text/delete
+#   /api/text/download
+# clean_text
+#   /api/clean_text/create
+#   /api/clean_text/delete
+#   /api/clean_text/preview
