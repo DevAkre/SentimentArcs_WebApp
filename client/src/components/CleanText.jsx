@@ -2,6 +2,7 @@ import React, {useState, useContext} from 'react';
 import {SubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 import {StoreContext} from '../contexts/StoreContext';
+import {api_create } from '../api/clean_textAPI';
 const default_options = require('../constants/cleanOptions.json');
 
 
@@ -87,21 +88,7 @@ export default function CleanText({text_id}) {
         setOptions(newOptions);
         const sendData = optionToData(newOptions);
         console.log(sendData);
-        fetch('/api/clean_text/create', {
-            method: "POST",
-            body: JSON.stringify({"token":token, "text_id":text_id, "options":sendData}),
-            headers: {
-                'Content-Type': 'application/json'
-            }}).then(response => response.json()
-            ).then(data => {
-                if(data.success){
-                    selected_clean_text.setCleanText(data.cleanText);
-                }else{
-                    console.error("Error: ", data.error);
-                    alert("Error: " + data.error)
-                }
-            });
-
+        api_create(token, text_id, sendData, selected_clean_text.setCleanText)
     }
 
     return(

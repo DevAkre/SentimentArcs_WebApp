@@ -1,8 +1,9 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {SubmitButton, CustomSubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 import SearchBox from './SearchBox';
 import {StoreContext} from '../contexts/StoreContext';
+import { api_list, api_delete} from '../api/clean_textAPI';
 
 function ListItem({id, label, onClickSelect, onClickDelete, extraInfo= null}){
     return(
@@ -32,6 +33,10 @@ export default function CleanTextSelect({text_id}) {
     const selected_clean_text = useContext(StoreContext).selected_clean_text;
     const {token} = useAuth();
 
+    useEffect(() => {
+        setDrop(selected_clean_text.cleanText === null && drop);
+    }, [selected_clean_text.cleanText]);
+
     const handleSelect = (event) => {
         const text_id = parseInt(event.currentTarget.id);
         if(selected_clean_text.cleanText===null || text_id !== selected_clean_text.cleanText.clean_text_id){
@@ -48,18 +53,7 @@ export default function CleanTextSelect({text_id}) {
     const handleDelete = (event) => {
         event.stopPropagation();
         const text_id = parseInt(event.currentTarget.id);
-        fetch('/api/clean_text/delete', {
-            method: "POST",
-            body: JSON.stringify({"token":token, "clean_text_id":text_id}),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(
-            (response) => {
-                if(response.ok){
-                    return response.json();
-                }
-        }).then(
+        api_delete(token, text_id).then(
             (data) => {
                 if(data.success){
                     //remove from list
@@ -85,18 +79,7 @@ export default function CleanTextSelect({text_id}) {
         //to be dropped down
         if(!drop){
             //get list of files
-            fetch('/api/clean_text/list', {
-                method: "POST",
-                body: JSON.stringify({"token":token, "text_id":text_id}),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(
-                (response) => {
-                    if(response.ok){
-                        return response.json();
-                    }
-            }).then(
+            api_list(token,text_id).then(
                 (data) => {
                     if(data.success){
                         setCTextList(JSON.parse(data.cleanTexts));

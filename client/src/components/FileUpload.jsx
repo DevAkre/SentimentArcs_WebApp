@@ -5,6 +5,7 @@ import InputBox from './InputBox';
 import {SubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 import {StoreContext} from '../contexts/StoreContext';
+import { api_upload } from '../api/textAPI';
 
 const DEFAULT_MAX_FILE_SIZE = 10000000; // 10MB
 const DEFAULT_ACCEPT_TYPES = ".txt,.pdf";
@@ -37,15 +38,7 @@ export default function FileUpload({label, fileCallBack, maxFileSize = DEFAULT_M
         const data = new FormData(event.currentTarget);
         data.append("token", token);
         // console.log(data);
-        const response = await fetch("/api/text/upload", {
-            method: "POST",
-            body: data
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-            alert("Error uploading file");
-        });
-        const responseData = await response.json();
+        const responseData = await api_upload(data);
         console.log(responseData);
         if(responseData.success){
             event.target.reset();

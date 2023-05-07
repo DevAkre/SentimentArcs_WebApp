@@ -2,7 +2,8 @@ import React, {useState, useContext, useEffect} from 'react';
 import {StoreContext} from '../contexts/StoreContext';
 import { useAuth } from '../hooks/useAuth';
 import {SubmitButton} from './SubmitButton';
-const PREVIEW_SENTENCE_NUM = 3;
+import { api_preview } from '../api/clean_textAPI';
+const PREVIEW_SENTENCE_NUM = 5;
 
 //function fetches preview of clean text from server and return component displaying it
 export default function CleanTextPreview(_){
@@ -13,14 +14,7 @@ export default function CleanTextPreview(_){
 
     useEffect(() => {
         if(!clean_text) return;
-        fetch('/api/clean_text/preview', {
-            method: "POST",
-            // body: JSON.stringify({"token": token, "clean_text_id": clean_text.clean_text_id}),
-            body: JSON.stringify({"token": token, "clean_text_id": null, "num": PREVIEW_SENTENCE_NUM}),
-            headers: {
-                'Content-Type': 'application/json'
-            }}).then(response => response.json()
-            ).then(data => {
+        api_preview(token,clean_text.clean_text_id, PREVIEW_SENTENCE_NUM).then(data => {
                 if(data.success){
                    setPreview(data.preview);
                 }else{

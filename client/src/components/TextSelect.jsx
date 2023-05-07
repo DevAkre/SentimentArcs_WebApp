@@ -3,6 +3,7 @@ import {SubmitButton, CustomSubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 import SearchBox from './SearchBox';
 import {StoreContext} from '../contexts/StoreContext';
+import { api_delete, api_download, api_list } from '../api/textAPI';
 
 function ListItem({id, label, onClickSelect, onClickDelete, onClickDownload, extraInfo= null}){
     return(
@@ -62,18 +63,7 @@ export default function TextSelect(_) {
     const handleDelete = (event) => {
         event.stopPropagation();
         const text_id = parseInt(event.currentTarget.id);
-        fetch('/api/text/delete', {
-            method: "POST",
-            body: JSON.stringify({"token":token, "text_id":text_id}),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(
-            (response) => {
-                if(response.ok){
-                    return response.json();
-                }
-        }).then(
+        api_delete(token,text_id).then(
             (data) => {
                 if(data.success){
                     //remove from list
@@ -99,44 +89,14 @@ export default function TextSelect(_) {
         event.preventDefault();
         const text_id = parseInt(event.currentTarget.id);
         const text = textList.find((text) => text.text_id === text_id)
-        fetch('/api/text/download', {
-            method: "POST",
-            body: JSON.stringify({"token":token, "text_id":text_id}),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(
-            (response) => {
-                return response.blob();
-        }).then(
-            (blob) => {
-                const href = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.download = text.title + "-" + text.author  + ".txt";
-                a.href = href;
-                console.log(a);
-                a.click();
-                a.href = "";
-                
-        });
+        api_download(token,text_id, text);
     }
 
     const handleDrop = async(event) => {
         //to be dropped down
         if(!drop){
             //get list of files
-            fetch('/api/text/list', {
-                method: "POST",
-                body: JSON.stringify({"token":token}),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(
-                (response) => {
-                    if(response.ok){
-                        return response.json();
-                    }
-            }).then(
+            api_list(token).then(
                 (data) => {
                     if(data.success){
                         setTextList(JSON.parse(data.texts));

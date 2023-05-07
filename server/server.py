@@ -1,10 +1,11 @@
 from flask import Flask, request, send_file, send_from_directory
-from models import db, User, Text, Clean_Text
+from models import db, User, Text, Clean_Text, Model
 #SentimentArcsPackage
 import imppkg.simplifiedSA as SA
 import os
 import csv
 import json
+import pandas as pd
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = 'uploads'
@@ -19,6 +20,7 @@ app.config["DATA_FOLDER"] = DATA_FOLDER
 #make upload folder if it doesn't exist
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER']), exist_ok=True)
 os.makedirs(os.path.join(app.config['DATA_FOLDER'], 'clean_text'), exist_ok=True)
+os.makedirs(os.path.join(app.config['DATA_FOLDER'], 'model'), exist_ok=True)
 
 db.init_app(app)
 
@@ -258,7 +260,7 @@ def clean_text_create():
                 #save to database
                 db.session.add(clean_text)
                 db.session.commit()
-                return {"success": True, "clean_text": clean_text.serialize()}
+                return {"success": True, "cleanText": clean_text.serialize()}
 
 @app.post('/api/clean_text/preview')
 def clean_text_preview():
@@ -279,19 +281,82 @@ def clean_text_preview():
                 middle5 = []
                 last5 = []
                 num = request_data["num"];
-                with open(os.path.join(app.config['DATA_FOLDER'], 'cleanText',  text.filname), 'r') as csvfile:
+                with open(os.path.join(app.config['DATA_FOLDER'], 'clean_text',  text.filename), 'r') as csvfile:
                     reader = csv.reader(csvfile)
-                    row_cout = sum(1 for row in reader)
-                    for i, row in enumerate(reader):
+                    row_count = sum(1 for row in reader)
+                    csvfile.seek(0)
+                    i = 0
+                    for row in (reader):
                         if(0<i<num+1):
                             first5.append(row)
-                        elif((row_cout-num)/2<i<(row_cout+num)/2+1):
+                        elif((row_count-num)/2<i<(row_count+num)/2+1):
                             middle5.append(row)
-                        elif(row_cout-(num+1)<i<row_cout):
+                        elif(row_count-(num+1)<i<row_count):
                             last5.append(row)
+                        i+=1
                 return {"success": True, "preview": [first5, middle5, last5]}
 
-        
+@app.post('/api/model/list')
+def model_list():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    clean_text = Clean_Text.query.filter_by(clean_text_id=request_data["clean_text_id"]).first()
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        models = Model.query.filter_by(user_id=user.user_id, clean_text_id = clean_text.clean_text_id).all()
+        if(models is None):
+            return {"models": []}
+        modelList = []
+        for model in models:
+            modelList.append(model.serialize())
+        print(modelList)
+        return {"models": json.dumps(modelList, default = str)}
+
+#runs model on clean text asynchronously and sents back post response when done
+@app.post('/api/model/run')
+async def model_run():
+    request_data = request.get_json()
+    user = get_user_from_token(request_data["token"])
+    model = request_data["model_name"]
+    if(user is None):
+        return {"success": False, "error": "Invalid token"}
+    else:
+        clean_text = Clean_Text.query.filter_by(clean_text_id=request_data["clean_text_id"]).first()
+        if(clean_text is None):
+            return {"success": False, "error": "Invalid clean text id"}
+        else:
+            if(clean_text.user_id != user.user_id):
+                return {"success": False, "error": "You do not own this text"}
+            else:
+                #check if model already exists
+                temp = Model.query.filter_by(clean_text_id=clean_text.clean_text_id, model_name=model).first()
+                if(temp is not None):
+                    return {"success": False, "error": "Model already exists"}
+                #read clean text file
+                clean_text_df = pd.read_csv(os.path.join(app.config['DATA_FOLDER'], 'clean_text', clean_text.filename))
+                #run model
+                model_df = None
+                print("Attempting model: " + model)
+                if(model == "Vader"):
+                    model_df = SA.vader(clean_text_df, clean_text.filename)
+                elif(model == "TextBlob"):
+                    model_df = SA.textblob(clean_text_df, clean_text.filename)
+                elif(model == "DistilBERT"):
+                    model_df = SA.distilbert(clean_text_df, clean_text.filename)
+                else:
+                    model_df = None
+                if(model_df is None):
+                    return {"success": False, "error": "Invalid model"}
+                
+                #save file
+                print(model_df)
+                modelObj = Model(model, clean_text.clean_text_id, user.user_id)
+                db.session.add(modelObj)
+                model_df.to_csv(os.path.join(app.config['DATA_FOLDER'], 'model', modelObj.filename), index=False)
+                db.session.commit()
+                #send back response
+                return {"success": True}
 
 if __name__ == '__main__':
     app.run()

@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "./useLocalStorage";
+import { AuthLogin, AuthLogout, AuthRegister } from "../api/userAPI.js";
 const AuthContext = createContext();
 
 //Development only
@@ -9,61 +10,6 @@ const AuthContext = createContext();
 //     setTimeout(() => resolve(data["username"]), 250);
 //   });
 
-const AuthLogin = async (data) => {
-  return fetch(
-    "/api/user/login",{
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data)})
-    .then((response) => {
-        if(response.ok)
-          return response.json()
-        else
-          return {success: false}
-      }
-    )
-    .catch((error) => {
-        console.error("Error:", error);
-        alert("Error: " + error);
-      }
-    );
-};
-
-
-const AuthRegister = async (data) => {
-  return fetch(
-    "/api/user/register",{
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),})
-    .then((response) => {
-      if(response.ok)
-        return response.json()
-      else
-        return {success: false}
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Error: " + error);
-    }
-    );
-}
-      
-
-const AuthLogout = async (data) => {
-  return fetch(
-    "/api/user/logout",{
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-    }).then(response => response.json());
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useLocalStorage("user", null);

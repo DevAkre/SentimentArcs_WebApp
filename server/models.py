@@ -22,20 +22,6 @@ class User(db.Model):
     def generate_access_token(self):
         self.token = random.randint(0, 2**31 - 1)
 
-class Model(db.Model):
-    model_id = db.Column(db.Integer, primary_key=True)
-    model_name = db.Column(db.String(80), unique=True, nullable=False)
-    family = db.Column(db.String(20), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    text_id = db.Column(db.Integer, db.ForeignKey('text.text_id'), nullable=False)
-
-    def __repr__(self):
-        return '<Model %r>' % self.name
-    
-    def __init__(self, name, user_id):
-        self.name = name
-        self.user_id = user_id
-
 class Text(db.Model):
     text_id = db.Column(db.Integer, primary_key=True)
     date_uploaded = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -91,7 +77,7 @@ class Clean_Text(db.Model):
 
     def __init__(self, text_id, user_id, options):
         datetime_str = datetime.now().strftime('%Y%m%d-%H%M%S')
-        self.filename = str(self.clean_text_id) + '_' + str(text_id) + '_' + str(user_id)+ datetime_str + '.txt'
+        self.filename = str(text_id) + '_' + str(user_id) +"_"+ datetime_str + '.csv'
         self.text_id = text_id
         self.user_id = user_id
         if(type(options) == list):
@@ -101,3 +87,28 @@ class Clean_Text(db.Model):
         else:
             raise TypeError('options must be a list or a string')
         
+
+class Model(db.Model):
+    model_id = db.Column(db.Integer, primary_key=True)
+    date_processed = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    model_name = db.Column(db.String(80) , nullable=False)
+    clean_text_id = db.Column(db.Integer, db.ForeignKey('clean__text.clean_text_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    filename = db.Column(db.String(120), nullable=False)
+
+    def __repr__(self):
+        return '<Model %r>' % self.name
+    
+    def serialize(self):
+        return {
+            'model_id': self.model_id,
+            'date_processed': self.date_processed,
+            'model_name': self.model_name
+        }
+
+    def __init__(self, model_name, clean_text_id, user_id):
+        datetime_str = datetime.now().strftime('%Y%m%d-%H%M%S')
+        self.model_name = model_name
+        self.user_id = user_id
+        self.filename = str(clean_text_id) + '_' + str(user_id) + "_" + model_name + "_" + datetime_str + '.csv'
+        self.clean_text_id = clean_text_id
