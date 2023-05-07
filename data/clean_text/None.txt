@@ -1,1 +1,0 @@
-Clean whitespaces,Segment by sentences,Segment by paragraphs,Compress whitespace,n-grams:2,Punctuation,Lemmatization

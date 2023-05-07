@@ -90,7 +90,8 @@ class Clean_Text(db.Model):
         }
 
     def __init__(self, text_id, user_id, options):
-        self.filename = str(self.clean_text_id) + '_' + str(text_id) + '_' + str(user_id) + '.txt'
+        datetime_str = datetime.now().strftime('%Y%m%d-%H%M%S')
+        self.filename = str(self.clean_text_id) + '_' + str(text_id) + '_' + str(user_id)+ datetime_str + '.txt'
         self.text_id = text_id
         self.user_id = user_id
         if(type(options) == list):

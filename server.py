@@ -138,6 +138,9 @@ def text_delete():
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], text.filename))
                 except:
                     print("Error: file not found")
+
+                #delete all clean text with this text_id
+                clean_texts = Clean_Text.query.filter_by(text_id=text.text_id).delete()
                 #delete text from database
                 db.session.delete(text)
                 db.session.commit()
@@ -238,24 +241,24 @@ def clean_text_create():
                 return {"success": False, "error": "You do not own this text"}
             else:
             
-                #create cleaned text
+                #create cleaned text object
                 clean_text = Clean_Text(text.text_id, user.user_id, request_data["options"])
                 #check if clean text already exists
                 temp = Clean_Text.query.filter_by(text_id=clean_text.text_id, options=clean_text.options).first()
                 if(temp is not None):
                     return {"success": False, "error": "Clean text already exists"}
-                #create file
-                text_str = SA.import_df(text.filename)
+                #create clean text file
+                with open(os.path.join(app.config['UPLOAD_FOLDER'], text.filename), 'r') as f:
+                    text_str = f.read()
                 segmented_text = SA.segment_sentences(text_str)
-                # SA.create_clean_df(segmented_text, text.filename)
-
+                clean_df = SA.create_clean_df(segmented_text, text.filename)
+                
                 #save file
-                with open(os.path.join(app.config['DATA_FOLDER'], 'clean_text', clean_text.filename), 'w') as f:
-                    f.write(clean_text.options)
+                clean_df.to_csv(os.path.join(app.config['DATA_FOLDER'], 'clean_text', clean_text.filename), index=False)
                 #save to database
                 db.session.add(clean_text)
                 db.session.commit()
-                return {"success": True}
+                return {"success": True, "clean_text": clean_text.serialize()}
 
 @app.post('/api/clean_text/preview')
 def clean_text_preview():
@@ -264,45 +267,29 @@ def clean_text_preview():
     if(user is None):
         return {"success": False, "error": "Invalid token"}
     else:
-        first5 = []
-        middle5 = []
-        last5 = []
-        num = request_data["num"];
-        with open(os.path.join(app.config['DATA_FOLDER'],  'clean_text', 'PrideAndPrejudiceByJaneAustin_cleaned.csv' ), 'r') as csvfile:
-            reader = csv.reader(csvfile)
-            row_cout = sum(1 for row in reader)
-            csvfile.seek(0)
-            for i, row in enumerate(reader):
-                if(0<i<num+1):
-                    first5.append(row)
-                elif((row_cout-num)/2<i<(row_cout+num)/2+1):
-                    middle5.append(row)
-                elif(row_cout-(num+1)<i<row_cout):
-                    last5.append(row)
-        return {"success": True, "preview": [first5, middle5, last5]}
-        # text = Clean_Text.query.filter_by(clean_text_id=request_data["clean_text_id"]).first()
-        # if(text is None):
-        #     return {"success": False, "error": "Invalid clean text id"}
-        # else:
-        #     if(text.user_id != user.user_id):
-        #         return {"success": False, "error": "You do not own this text"}
-        #     else:
-        #         #send first 5, middle 5 and last 5 sentences of cleaned_text
-                # first5 = []
-                # middle5 = []
-                # last5 = []
-                # num = request_data["num"];
-        #         with open(os.path.join(app.config['DATA_FOLDER'], 'clean_text',  text.filname), 'r') as f:
-        #             reader = csv.reader(csvfile)
-        #             row_cout = sum(1 for row in reader)
-        #             for i, row in enumerate(reader):
-        #                 if(0<i<num+1):
-                        #     first5.append(row)
-                        # elif((row_cout-num)/2<i<(row_cout+num)/2+1):
-                        #     middle5.append(row)
-                        # elif(row_cout-(num+1)<i<row_cout):
-                        #     last5.append(row)
-        #         return {"success": True, "preview": [first5, middle5, last5]}
+        text = Clean_Text.query.filter_by(clean_text_id=request_data["clean_text_id"]).first()
+        if(text is None):
+            return {"success": False, "error": "Invalid clean text id"}
+        else:
+            if(text.user_id != user.user_id):
+                return {"success": False, "error": "You do not own this text"}
+            else:
+                #send first 5, middle 5 and last 5 sentences of cleaned_text
+                first5 = []
+                middle5 = []
+                last5 = []
+                num = request_data["num"];
+                with open(os.path.join(app.config['DATA_FOLDER'], 'cleanText',  text.filname), 'r') as csvfile:
+                    reader = csv.reader(csvfile)
+                    row_cout = sum(1 for row in reader)
+                    for i, row in enumerate(reader):
+                        if(0<i<num+1):
+                            first5.append(row)
+                        elif((row_cout-num)/2<i<(row_cout+num)/2+1):
+                            middle5.append(row)
+                        elif(row_cout-(num+1)<i<row_cout):
+                            last5.append(row)
+                return {"success": True, "preview": [first5, middle5, last5]}
 
         
 
