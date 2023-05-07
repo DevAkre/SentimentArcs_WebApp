@@ -1,0 +1,8 @@
+
+[
+    {"name": "Vader"},
+    {"name": "TextBlob"},
+    {"name": "DistilBERT"},
+    {"name": "MultiBERT NLPTown"},
+    {"name": "RoBERTa15"}
+]

@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import {SubmitButton, CustomSubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
 import SearchBox from './SearchBox';
@@ -35,16 +35,23 @@ function ListItem({id, label, onClickSelect, onClickDelete, onClickDownload, ext
 export default function TextSelect(_) {
     const [drop, setDrop] = useState(false);
     const [textList, setTextList] = useState([]);
-    const store = useContext(StoreContext);
+    const selected_text = useContext(StoreContext).selected_text;
+    const selected_clean_text = useContext(StoreContext).selected_clean_text;
     const {token} = useAuth();
     console.log(drop);
 
+    //If selected text becomes null when drop is open, close drop
+    useEffect(() => {
+        setDrop(selected_text.text === null && drop);
+    }, [selected_text.text]);
+
     const handleSelect = (event) => {
         const text_id = parseInt(event.currentTarget.id);
-        if(store.selected_text.text===null || text_id !== store.selected_text.text.text_id){
+        if(selected_text.text===null || text_id !== selected_text.text.text_id){
             for(var i = 0; i < textList.length; i++){
                 if(textList[i].text_id === text_id){
-                    store.selected_text.setText(textList[i]);
+                    selected_text.setText(textList[i]);
+                    selected_clean_text.setCleanText(null);
                     setDrop(false);
                     break;
                 }
@@ -76,8 +83,8 @@ export default function TextSelect(_) {
                             textListCopy.splice(i,1);
                             console.log("Deleted text ", text_id, " at index ", i, " from list");
                             setTextList(textListCopy);
-                            if(store.selected_text.text !== null && store.selected_text.text.text_id === text_id){
-                                store.selected_text.setText(null);
+                            if(selected_text.text !== null && selected_text.text.text_id === text_id){
+                                selected_text.setText(null);
                             }
                             break;
                         }
@@ -91,6 +98,7 @@ export default function TextSelect(_) {
     const handleDownload = (event) => {
         event.preventDefault();
         const text_id = parseInt(event.currentTarget.id);
+        const text = textList.find((text) => text.text_id === text_id)
         fetch('/api/text/download', {
             method: "POST",
             body: JSON.stringify({"token":token, "text_id":text_id}),
@@ -99,14 +107,17 @@ export default function TextSelect(_) {
             }
         }).then(
             (response) => {
-                if(response.ok){
-                    return response.json();
-                }
+                return response.blob();
         }).then(
-            (data) => {
-                if(data.success){
-                    //TODO WIP
-                }
+            (blob) => {
+                const href = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.download = text.title + "-" + text.author  + ".txt";
+                a.href = href;
+                console.log(a);
+                a.click();
+                a.href = "";
+                
         });
     }
 
@@ -143,7 +154,7 @@ export default function TextSelect(_) {
     return(
         <div>
             <div className='mb-2'> Select previously uploaded files:</div>
-            <SubmitButton label = {store.selected_text.text===null? "Select text":"Selected: " + store.selected_text.text.title + (store.selected_text.text.author?" by " + store.selected_text.text.author: "")} id="dropdownSearchButton" data-dropdown-toggle="dropdownSearch" data-dropdown-placement="bottom" onClick = {handleDrop} / >
+            <SubmitButton label = {selected_text.text===null? "Select text":"Selected: " + selected_text.text.title + (selected_text.text.author?" by " + selected_text.text.author: "")} id="dropdownSearchButton" data-dropdown-toggle="dropdownSearch" data-dropdown-placement="bottom" onClick = {handleDrop} / >
             <div id="dropdownSearch" className={(drop?"":"hidden") + " z-10 bg-white rounded-lg shadow bg-slate-300 dark:bg-slate-900"}>
                 <SearchBox/>
 

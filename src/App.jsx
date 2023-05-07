@@ -12,6 +12,7 @@ import ForgotPasswordPage from './pages/ForgotPassword';
 import SettingsPage from './pages/Settings';
 import { ProtectedOutlet } from './components/ProtectedRoute';
 import { AuthProvider } from './hooks/useAuth';
+import TestPage from './pages/Test';
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route path="ensemble" element = {<EnsemblePage/>}/>
           <Route path="settings" element={<SettingsPage/>}/>
           <Route path="help" element = {<HelpPage/>}/>
+          <Route path="test" element={<TestPage/>}/>
         </Route>
         <Route path="*" element={<div> Not Found or You do not have permission.</div>}/>
       </Routes>

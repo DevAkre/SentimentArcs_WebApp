@@ -7,12 +7,9 @@ import LoginBox from "../components/LoginBox";
 import Logo from "../components/Logo";
 
 export default function LoginPage(){
-  const {login, user, token} = useAuth();
-  useEffect(() => {
-    if (user && token) {
-      window.location.href = "/dashboard";
-    }
-  }, [user, token]);
+  const {login} = useAuth();
+  
+  useEffect(() => {login(null)});
   
   const handleSubmit = (event) => {
     event.preventDefault();

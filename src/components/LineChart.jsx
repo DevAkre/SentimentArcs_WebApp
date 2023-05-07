@@ -23,24 +23,17 @@ ChartJS.register(
     Legend
   );
 
-export default function LineChart({lineLabels, datasets, xLabel, yLabel}) {
-    let labels = [];
-    for(let i = 0; i < datasets[0].length; i+=10){
-        labels.push(i);
-    }
-
+export default function LineChart({datasets, xLabel, yLabel}) {
     const data = {
-        //labels step by n
-        labels: labels,
-        datasets:[]
+        labels: datasets.map((item) => item.label),
+        datasets: [
+            {
+                label: 'Sentiment',
+                data: datasets.map((item) => item.sentiment)
+            }
+           
+        ]
     };
-
-    for(let i =0; i< datasets.length; i++){
-        data.datasets.push({
-            data:  datasets[i].map((item) => item.sentiment),
-            label: lineLabels[i],
-            fill: false
-        });
-    }
+    
     return <Line data={data} />;
 }

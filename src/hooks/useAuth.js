@@ -71,6 +71,15 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const login = async (data) => {
+    if(data === null){
+      if(user != null && token != null){
+        const response = await AuthLogin({"username": user, "token": token});
+        if(response.success){
+          navigate("/dashboard", { replace: true });
+        }
+      }
+      return;
+    }
     const response = await AuthLogin({"username": data.username, "password": data.password});
     
     if(response.success){
