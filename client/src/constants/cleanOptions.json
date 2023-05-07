@@ -1,0 +1,20 @@
+
+[
+    {"name": "Clean whitespaces", "value": true, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Segment text", "type": "section", "children":[
+        {"name": "Segment by sentences", "value": true, "type": "checkbox", "mandatory": false, "children": null},
+        {"name": "Segment by paragraphs", "value": true, "type": "checkbox", "mandatory": false, "children": null}
+    ]},
+    {"name": "Compress whitespace", "value": true, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "n-grams", "value": 2, "type": "number", "mandatory": false, "children": null},
+    {"name": "Convert Emojis to text", "value": false, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Convert Emoticons to text", "value": false, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Translate Slang", "value": false, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Translate Twitter term (LOL, LMAO etc)", "value": false, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Expand Contraction", "value": false, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Remove profanity, hate etc", "value": false, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Stop Words (comma-separated)", "value": "", "type": "text", "mandatory": false, "children": null},
+    {"name": "Punctuation", "value": true, "type": "checkbox", "mandatory": false, "children": null},
+    {"name": "Lemmatization", "value": true, "type": "checkbox", "mandatory": false, "children": null}
+]
+
