@@ -1,0 +1,11 @@
+#database instance
+/instance
+/data
+#uploaded files
+/uploads
+#venv
+/virt
+
+.vscode
+__pycache__
+
