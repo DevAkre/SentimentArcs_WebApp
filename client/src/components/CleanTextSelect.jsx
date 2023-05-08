@@ -1,9 +1,9 @@
-import React, {useState, useContext, useEffect} from 'react';
-import {SubmitButton, CustomSubmitButton} from './SubmitButton';
+import React, {useState, useContext} from 'react';
+import {CustomSubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
-import SearchBox from './SearchBox';
 import {StoreContext} from '../contexts/StoreContext';
 import { api_list, api_delete} from '../api/clean_textAPI';
+import Dropdown from './Dropdown';
 
 function ListItem({id, label, onClickSelect, onClickDelete, extraInfo= null}){
     return(
@@ -28,14 +28,11 @@ function ListItem({id, label, onClickSelect, onClickDelete, extraInfo= null}){
 }
 
 export default function CleanTextSelect({text_id}) {
-    const [drop, setDrop] = useState(false);
     const [cTextList, setCTextList] = useState([]);
     const selected_clean_text = useContext(StoreContext).selected_clean_text;
     const {token} = useAuth();
 
-    useEffect(() => {
-        setDrop(selected_clean_text.cleanText === null && drop);
-    }, [selected_clean_text.cleanText]);
+    
 
     const handleSelect = (event) => {
         const text_id = parseInt(event.currentTarget.id);
@@ -43,7 +40,6 @@ export default function CleanTextSelect({text_id}) {
             for(var i = 0; i < cTextList.length; i++){
                 if(cTextList[i].clean_text_id === text_id){
                     selected_clean_text.setCleanText(cTextList[i]);
-                    setDrop(false);
                     break;
                 }
             }
@@ -75,37 +71,28 @@ export default function CleanTextSelect({text_id}) {
         });
     }
 
-    const handleDrop = async(event) => {
-        //to be dropped down
-        if(!drop){
-            //get list of files
-            api_list(token,text_id).then(
-                (data) => {
-                    if(data.success){
-                        setCTextList(JSON.parse(data.cleanTexts));
-                        setDrop(!drop);
-                    }else {
-                        console.error("Error: ", data.error);
-                        alert("Error: " + data.error)
-                    }
-                });
-        }else setDrop(!drop);
+    const handleDrop = () => {
+        api_list(token,text_id).then(
+            (data) => {
+                if(data.success){
+                    setCTextList(JSON.parse(data.cleanTexts));
+                }else {
+                    console.error("Error: ", data.error);
+                    alert("Error: " + data.error)
+                }
+            });
     }
+
     return(
         <div>
             <div className='mb-2'> Select previously cleaned text:</div>
-            <SubmitButton label = {selected_clean_text.cleanText===null? "Select text":"Selected: " + selected_clean_text.cleanText.options} id="dropdownSearchButton" data-dropdown-toggle="dropdownSearch" data-dropdown-placement="bottom" onClick = {handleDrop} / >
-            <div id="dropdownSearch" className={(drop?"":"hidden") + " z-10 bg-white rounded-lg shadow bg-slate-300 dark:bg-slate-900"}>
-                <SearchBox/>
-
-                <ul className="h-48  px-3 pb-3 overflow-y-auto">
-                    {cTextList.map((text, i) => 
-                        <ListItem key={text.clean_text_id} id = {text.clean_text_id} label = {text.options}
-                        extraInfo = {"Date: " + text.date_processed.split(' ')[0] + ", clean_id: " + text.clean_text_id}
-                        onClickSelect = {handleSelect} onClickDelete = {handleDelete}/>
-                    )}
-                </ul>
-            </div>
+            <Dropdown label ={selected_clean_text.cleanText===null? "Select text":"Selected: " + selected_clean_text.cleanText.options} dropFunction={handleDrop} Effect={selected_clean_text.cleanText}>
+                {cTextList.map((text, i) => 
+                    <ListItem key={text.clean_text_id} id = {text.clean_text_id} label = {text.options}
+                    extraInfo = {"Date: " + text.date_processed.split(' ')[0] + ", clean_id: " + text.clean_text_id}
+                    onClickSelect = {handleSelect} onClickDelete = {handleDelete}/>
+                )}
+            </Dropdown>
         </div>
     );
 }

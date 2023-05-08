@@ -1,7 +1,7 @@
-import React, {useState, useContext, useEffect} from 'react';
-import {SubmitButton, CustomSubmitButton} from './SubmitButton';
+import React, {useState, useContext} from 'react';
+import {CustomSubmitButton} from './SubmitButton';
 import {useAuth} from '../hooks/useAuth';
-import SearchBox from './SearchBox';
+import Dropdown from './Dropdown';
 import {StoreContext} from '../contexts/StoreContext';
 import { api_delete, api_download, api_list } from '../api/textAPI';
 
@@ -34,17 +34,10 @@ function ListItem({id, label, onClickSelect, onClickDelete, onClickDownload, ext
 }
 
 export default function TextSelect(_) {
-    const [drop, setDrop] = useState(false);
     const [textList, setTextList] = useState([]);
     const selected_text = useContext(StoreContext).selected_text;
     const selected_clean_text = useContext(StoreContext).selected_clean_text;
     const {token} = useAuth();
-    console.log(drop);
-
-    //If selected text becomes null when drop is open, close drop
-    useEffect(() => {
-        setDrop(selected_text.text === null && drop);
-    }, [selected_text.text]);
 
     const handleSelect = (event) => {
         const text_id = parseInt(event.currentTarget.id);
@@ -53,7 +46,6 @@ export default function TextSelect(_) {
                 if(textList[i].text_id === text_id){
                     selected_text.setText(textList[i]);
                     selected_clean_text.setCleanText(null);
-                    setDrop(false);
                     break;
                 }
             }
@@ -92,40 +84,26 @@ export default function TextSelect(_) {
         api_download(token,text_id, text);
     }
 
-    const handleDrop = async(event) => {
-        //to be dropped down
-        if(!drop){
-            //get list of files
-            api_list(token).then(
-                (data) => {
-                    if(data.success){
-                        setTextList(JSON.parse(data.texts));
-                        setDrop(!drop);
-                    }else {
-                        console.error("Error: ", data.error);
-                    }
-                });
-            
-
-        }else setDrop(!drop);
-        
+    const handleDrop = (event) => {
+        api_list(token).then(
+            (data) => {
+                if(data.success){
+                    setTextList(JSON.parse(data.texts));
+                }else {
+                    console.error("Error: ", data.error);
+                }
+            });        
     }
 
     return(
         <div>
-            <div className='mb-2'> Select previously uploaded files:</div>
-            <SubmitButton label = {selected_text.text===null? "Select text":"Selected: " + selected_text.text.title + (selected_text.text.author?" by " + selected_text.text.author: "")} id="dropdownSearchButton" data-dropdown-toggle="dropdownSearch" data-dropdown-placement="bottom" onClick = {handleDrop} / >
-            <div id="dropdownSearch" className={(drop?"":"hidden") + " z-10 bg-white rounded-lg shadow bg-slate-300 dark:bg-slate-900"}>
-                <SearchBox/>
-
-                <ul className="h-48  px-3 pb-3 overflow-y-auto">
+            <Dropdown label={selected_text.text===null? "Select text":"Selected: " + selected_text.text.title + (selected_text.text.author?" by " + selected_text.text.author: "")} dropFunction={handleDrop} Effect={selected_text.text} >
                     {textList.map((text, i) => 
                         <ListItem key={text.text_id} id = {text.text_id} label = {text.title + " - " + text.author}
                         extraInfo = {"Date: " + text.date_uploaded.split(' ')[0] + ", text_id: " + text.text_id}
                         onClickSelect = {handleSelect} onClickDelete = {handleDelete} onClickDownload = {handleDownload}/>
                     )}
-                </ul>
-            </div>
+            </Dropdown>
         </div>
     );
 }

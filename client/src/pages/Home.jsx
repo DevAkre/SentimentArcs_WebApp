@@ -4,7 +4,7 @@ import TextSelect from '../components/TextSelect';
 import CleanText from '../components/CleanText';
 import CleanTextSelect from '../components/CleanTextSelect';
 import {StoreContext} from '../contexts/StoreContext';
-import ModelSelect from '../components/ModelSelect';
+import ModelHome from '../components/ModelHome';
 import { useAuth } from '../hooks/useAuth';
 import {ColumnGrid, Column} from '../components/ColumnGrid';
 import CleanTextPreview from '../components/CleanTextPreview';
@@ -38,7 +38,7 @@ export default function HomePage() {
           <div>
             <CleanTextPreview/>
             <hr/>
-            <ModelSelect/>
+            <ModelHome/>
           </div>: <></>}
         </Column>
       </ColumnGrid>
