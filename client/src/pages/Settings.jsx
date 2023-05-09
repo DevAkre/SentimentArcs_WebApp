@@ -3,14 +3,23 @@ import {useAuth} from '../hooks/useAuth';
 import ToggleButton from '../components/ToggleButton';
 
 export default function SettingsPage() {
-  const {user} = useAuth();
-
-  const [darkMode, setDarkMode] = useState(document.querySelector('html').classList.contains('dark'));
+  const {userSettings} = useAuth();
+  const darkMode = userSettings.settings.theme === "dark";
+  const htmlGraphs = userSettings.settings.htmlGraphs;
+  console.log(userSettings.settings)
   const toggleDarkMode = () => {
-    setDarkMode(prevDarkMode => !prevDarkMode)
-    const darkMode = document.querySelector('html').classList.toggle('dark');
-    localStorage.setItem('darkMode', darkMode);
+    if(darkMode) document.querySelector('html').classList.remove('dark');
+    else document.querySelector('html').classList.add('dark');
+    const prevSettings = userSettings.settings;
+    prevSettings.theme = !darkMode?"dark":"light";
+    userSettings.setSettings(prevSettings);
     console.log(darkMode);
+  };
+
+  const toggleHTMLGraph = () => {
+    const prevSettings = userSettings.settings;
+    prevSettings.htmlGraphs = !htmlGraphs;
+    userSettings.setSettings(prevSettings);
   };
 
   return(
@@ -19,6 +28,7 @@ export default function SettingsPage() {
       <ul>
         <li>
           <ToggleButton value={darkMode} toggleFunc={toggleDarkMode} label= "Dark Mode"/>
+          <ToggleButton value={htmlGraphs} toggleFunc={toggleHTMLGraph} label= "HTML Graphs"/>
         </li>
       </ul>
     </div>

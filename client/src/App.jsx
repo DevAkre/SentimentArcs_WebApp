@@ -17,7 +17,16 @@ import TestPage from './pages/Test';
 
 function App() {
   //initiate dark mode
-  document.querySelector('html').classList.add('dark');
+  //if dark mode is enabled, or not set
+  if(localStorage.getItem('settings')!==null){
+    const settings = JSON.parse(localStorage.getItem('settings'));
+    if(settings.theme === "dark"){
+      document.querySelector('html').classList.add('dark');
+    }
+  }else{
+    document.querySelector('html').classList.remove('dark');
+  }
+  
   return (
     <AuthProvider>
     <div className="wrapper min-h-screen bg-white dark:bg-slate-800 dark:text-white">

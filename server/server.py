@@ -21,6 +21,7 @@ app.config["DATA_FOLDER"] = DATA_FOLDER
 os.makedirs(os.path.join(app.config['UPLOAD_FOLDER']), exist_ok=True)
 os.makedirs(os.path.join(app.config['DATA_FOLDER'], 'clean_text'), exist_ok=True)
 os.makedirs(os.path.join(app.config['DATA_FOLDER'], 'model'), exist_ok=True)
+os.makedirs(os.path.join(app.config['DATA_FOLDER'], 'figures'), exist_ok=True)
 
 db.init_app(app)
 
@@ -337,13 +338,23 @@ async def model_run():
                 clean_text_df = pd.read_csv(os.path.join(app.config['DATA_FOLDER'], 'clean_text', clean_text.filename))
                 #run model
                 model_df = None
+                plot_df = None
+                text = Text.query.filter_by(text_id=clean_text.text_id).first()
+                modelObj = Model(model, clean_text.clean_text_id, user.user_id)
+                print(modelObj.serialize())
                 print("Attempting model: " + model)
                 if(model == "Vader"):
                     model_df = SA.vader(clean_text_df, clean_text.filename)
+                    combined_df = SA.combine_model_results(clean_text_df, text.title, vader = model_df)
+                    plot_df = SA.plot_sentiments(combined_df, models = ["vader"] , title = text.title + " - " + model, save_filepath = os.path.join(app.config['DATA_FOLDER'], 'figures', str(clean_text.clean_text_id)+"_"))
                 elif(model == "TextBlob"):
                     model_df = SA.textblob(clean_text_df, clean_text.filename)
+                    combined_df = SA.combine_model_results(clean_text_df, text.title, textblob = model_df)
+                    plot_df = SA.plot_sentiments(combined_df, models = ["textblob"] , title = text.title + " - " + model, save_filepath = os.path.join(app.config['DATA_FOLDER'], 'figures', str(clean_text.clean_text_id)))
                 elif(model == "DistilBERT"):
                     model_df = SA.distilbert(clean_text_df, clean_text.filename)
+                    combined_df = SA.combine_model_results(clean_text_df, text.title, distilbert = model_df)
+                    plot_df = SA.plot_sentiments(combined_df, models = ["distilbert"] , title = text.title + " - " + model, save_filepath = os.path.join(app.config['DATA_FOLDER'], 'figures',str(clean_text.clean_text_id)))
                 else:
                     model_df = None
                 if(model_df is None):
@@ -351,7 +362,6 @@ async def model_run():
                 
                 #save file
                 print(model_df)
-                modelObj = Model(model, clean_text.clean_text_id, user.user_id)
                 db.session.add(modelObj)
                 model_df.to_csv(os.path.join(app.config['DATA_FOLDER'], 'model', modelObj.filename), index=False)
                 db.session.commit()

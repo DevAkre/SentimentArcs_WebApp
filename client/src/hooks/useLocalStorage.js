@@ -7,17 +7,22 @@ export const useLocalStorage = (keyName, defaultValue) => {
       if (value) {
         return JSON.parse(value);
       } else {
+        console.log(defaultValue);
         window.localStorage.setItem(keyName, JSON.stringify(defaultValue));
         return defaultValue;
       }
     } catch (err) {
+      console.log(err);
+      window.localStorage.setItem(keyName, JSON.stringify(defaultValue));
       return defaultValue;
     }
   });
   const setValue = (newValue) => {
     try {
       window.localStorage.setItem(keyName, JSON.stringify(newValue));
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
     setStoredValue(newValue);
   };
   return [storedValue, setValue];

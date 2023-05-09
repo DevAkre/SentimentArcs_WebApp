@@ -14,6 +14,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useLocalStorage("user", null);
   const [token, setToken] = useLocalStorage("token", null);
+  const [settings, setSettings] = useLocalStorage("settings", {"theme": "dark", "language": "English", "HTMLgraphs": false});
+
   const navigate = useNavigate();
 
   const login = async (data) => {
@@ -64,11 +66,13 @@ export const AuthProvider = ({ children }) => {
     () => ({
       user,
       token,
+      userSettings: {settings,
+      setSettings},
       login,
       logout,
       register
     }),
-    [user, token]
+    [user, token, settings]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
