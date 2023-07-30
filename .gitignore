@@ -1,2 +1,5 @@
 #venv
 /venv
+/data
+/instance
+/uploads

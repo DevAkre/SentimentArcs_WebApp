@@ -29,6 +29,7 @@ SentimentArcs WebApp is a Full Stack wrapper for [SentimentArcs Library][Sentime
 - Node.js and NPM (Only required for development)
 
 ### Installation
+
 1. Clone the repo 
     ```sh
     git clone https://github.com/DevAkre/SentimentArcs_WebApp
@@ -45,8 +46,10 @@ SentimentArcs WebApp is a Full Stack wrapper for [SentimentArcs Library][Sentime
     ```
 5. Run the server
     ```sh
-    python server/app.py
+    python server/server.py
     ```
+[!WARNING]  
+The Flask server uses a developmental WSGI server, which is not recommended for production. For production, use a production server such as [Gunicorn](https://gunicorn.org/). Detailed instructions to follow in the future.
 
 ### Build the React app yourself
 
@@ -55,7 +58,16 @@ SentimentArcs WebApp is a Full Stack wrapper for [SentimentArcs Library][Sentime
 
 ### Usage
 
-[Coming Soon]
+Here's a sample use case, where you want to run sentiment analysis on Pride and Prejudice.
+
+1. Download the book from [Project Gutenberg](https://www.gutenberg.org/ebooks/1342) as plain text.
+2. Remove the gutenberg header and footer from the text file, leaving only the core text. Don't worry about cleaning the text, the app should that that automatically later.
+3. Login to the app and upload the text file.
+4. Select cleaning parameters to automatically clean the text. Check if the cleaned text looks good.
+5. Run models on the text, you can run multiple models in parallel.
+[!WARNING]
+The models may take a while to run, depending on the size of the text and the number of models you are running. Larger DNN models may take a long time to run. You may exit the app at any point and come back later to check the results.
+
 
 ## Database Schema
 
@@ -63,7 +75,17 @@ Refer to the [docs](docs/DatabaseSchema.md) for more information.
 
 ## Screenshots
 
-[Coming Soon]
+Dark mode           |  Light mode
+:-------------------------:|:-------------------------:
+![Screenshot 1](docs/images/Screenshot1.png)  |  ![Screenshot 1 - light](docs/images/Screenshot1_light.png)
+
+![Screenshot 2](docs/images/Screenshot2.png)
+![Screenshot 3](docs/images/Screenshot3.png)
+
+HTML graphs (ChartJS)           |  SVG graphs
+:-------------------------:|:-------------------------:
+![Screenshot 4-1](docs/images/Screenshot4-1.png )  |  ![Screenshot 4-2](docs/images/Screenshot4-2.png)
+
 
 ## Contributing
 
